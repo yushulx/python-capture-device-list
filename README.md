@@ -47,5 +47,8 @@
     ```
     ![camera list in Python](screenshot/python-list-device.PNG)
 
+## Blog
+[Listing Multiple Cameras for OpenCV-Python on Windows][1]
 
 [0]:https://en.wikipedia.org/wiki/Microsoft_Windows_SDK
+[1]:http://www.codepool.biz/multiple-camera-opencv-python-windows.html
