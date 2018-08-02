@@ -3,7 +3,7 @@
 
 ## Environment
 * [Microsoft Windows SDK][0]
-* Python 2.7.9
+* Python 2.7.9 / Python 3.6.5
 * OpenCV 3.3.0
 
 ## How to Run 
@@ -37,13 +37,29 @@
 
 3. Build the Python extension
 
+    Python 2
+
     ```
     python setup.py build install
     ```
 
+    Python 3
+
+    ```
+    python3 setup.py build install
+    ```
+
 4. Run the app and select a capture device:
+
+    Python 2
+
     ```python
     python test.py
+    ```
+
+    Python 3
+    ```python
+    python3 test.py
     ```
     ![camera list in Python](screenshot/python-list-device.PNG)
 
