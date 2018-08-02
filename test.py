@@ -7,7 +7,7 @@ def select_camera(last_index):
     try:
         number = int(input(hint))
         # select = int(select)
-    except Exception ,e:
+    except Exception:
         print("It's not a number!")
         return select_camera(last_index)
 
