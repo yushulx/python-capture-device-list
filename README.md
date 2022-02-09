@@ -7,35 +7,7 @@
 * OpenCV 3.3.0
 
 ## How to Run 
-1. Configure Visual Studio environment:
-    * Visual Studio 2010 (VS10): SET VS90COMNTOOLS=%VS100COMNTOOLS%
-    * Visual Studio 2012 (VS11): SET VS90COMNTOOLS=%VS110COMNTOOLS%
-    * Visual Studio 2013 (VS12): SET VS90COMNTOOLS=%VS120COMNTOOLS%
-    * Visual Studio 2015 (VS14): SET VS90COMNTOOLS=%VS140COMNTOOLS%
-
-    If you are using **Visual Studio 2015**, use the following command:
-
-    ```
-    SET VS90COMNTOOLS=%VS140COMNTOOLS%
-    ```
-
-2. Add your Windows SDK lib path to **setup.py**:
-
-    ```python
-    from distutils.core import setup, Extension
-
-    module_device = Extension('device',
-                            sources = ['device.cpp'], 
-                            library_dirs=['G:\Program Files\Microsoft SDKs\Windows\v6.1\Lib']
-                        )
-
-    setup (name = 'WindowsDevices',
-            version = '1.0',
-            description = 'Get device list with DirectShow',
-            ext_modules = [module_device])
-    ```
-
-3. Build the Python extension
+1. Build the Python extension:
 
     Python 2
 
@@ -49,7 +21,7 @@
     python3 setup.py build install
     ```
 
-4. Run the app and select a capture device:
+2. Run the app and select a capture device:
 
     Python 2
 
