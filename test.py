@@ -53,7 +53,7 @@ def main():
 
         while True:
             
-            ret, frame = cap.read();
+            ret, frame = cap.read()
             cv2.imshow("frame", frame)
 
             # key: 'ESC'
