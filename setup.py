@@ -5,7 +5,7 @@ long_description = io.open("README.md", encoding="utf-8").read()
 packages = ['device']
 
 setup (name = 'windows-capture-device-list',
-            version = '1.0',
+            version = '1.0.1',
             description = 'Get device list with Windows DirectShow',
             long_description=long_description,
             long_description_content_type="text/markdown",
