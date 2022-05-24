@@ -1,6 +1,10 @@
+
+// Python includes
 #include <Python.h>
 
-// https://msdn.microsoft.com/en-us/library/windows/desktop/dd377566(v=vs.85).aspx
+// STD includes
+#include <stdio.h>
+
 #include <windows.h>
 #include <dshow.h>
 #include <comutil.h>
@@ -124,8 +128,7 @@ PyObject* DisplayDeviceInformation(IEnumMoniker *pEnum)
 	return pyList;
 }
 
-static PyObject *
-getDeviceList(PyObject *self, PyObject *args)
+static PyObject *getDeviceList(PyObject *self, PyObject *args)
 {
 	PyObject* pyList = NULL; 
 	
@@ -146,67 +149,29 @@ getDeviceList(PyObject *self, PyObject *args)
     return pyList;
 }
 
-static PyMethodDef Methods[] =
-{
-    {"getDeviceList", getDeviceList, METH_VARARGS, NULL},
-    {NULL, NULL, 0, NULL}
+//-----------------------------------------------------------------------------
+static PyMethodDef device_methods[] = {
+  {"getDeviceList", getDeviceList, METH_VARARGS, "get device list"},
+  {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 
-PyMODINIT_FUNC
-initdevice(void);
-
-#if defined(IS_PY3K)
-
-static int device_traverse(PyObject *m, visitproc visit, void *arg) {
-    Py_VISIT(GETSTATE(m)->error);
-    return 0;
+//-----------------------------------------------------------------------------
+#if PY_MAJOR_VERSION < 3
+PyMODINIT_FUNC init_device(void)
+{
+  (void) Py_InitModule("device", device_methods);
 }
-
-static int device_clear(PyObject *m) {
-    Py_CLEAR(GETSTATE(m)->error);
-    return 0;
-}
-
-static struct PyModuleDef moduledef = {
-    PyModuleDef_HEAD_INIT,
-    "device",
-    NULL,
-    sizeof(struct module_state),
-    Methods,
-    NULL,
-    device_traverse,
-    device_clear,
-    NULL
+#else /* PY_MAJOR_VERSION >= 3 */
+static struct PyModuleDef device_module_def = {
+  PyModuleDef_HEAD_INIT,
+  "device",
+  "Internal \"device\" module",
+  -1,
+  device_methods
 };
 
-#define INITERROR return NULL
-
-PyMODINIT_FUNC
-PyInit_device(void)
-
-#else
-#define INITERROR return
-void
-initdevice(void)
-#endif
+PyMODINIT_FUNC PyInit_device(void)
 {
-#if defined(IS_PY3K)
-    PyObject *module = PyModule_Create(&moduledef);
-#else
-    PyObject *module = Py_InitModule("device", Methods);
-#endif
-
-    if (module == NULL)
-        INITERROR;
-    struct module_state *st = GETSTATE(module);
-
-    st->error = PyErr_NewException("dbr.Error", NULL, NULL);
-    if (st->error == NULL) {
-        Py_DECREF(module);
-        INITERROR;
-    }
-
-#if defined(IS_PY3K)
-    return module;
-#endif
+  return PyModule_Create(&device_module_def);
 }
+#endif /* PY_MAJOR_VERSION >= 3 */

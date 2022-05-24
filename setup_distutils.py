@@ -1,8 +1,11 @@
-from skbuild import setup
+from distutils.core import setup, Extension
+
 import io
 
 long_description = io.open("README.md", encoding="utf-8").read()
-packages = ['device']
+module_device = Extension('device',
+                        sources = ['device/device.cpp']
+                      )
 
 setup (name = 'windows-capture-device-list',
             version = '1.0',
@@ -12,9 +15,9 @@ setup (name = 'windows-capture-device-list',
             author='yushulx',
             url='https://github.com/yushulx/python-capture-device-list',
             license='MIT',
-            packages=packages,
-            include_package_data=True,
-            classifiers=[
+        ext_modules = [module_device],
+        options={'build':{'build_lib':'./device'}},
+        classifiers=[
                 "Development Status :: 5 - Production/Stable",
                 "Environment :: Console",
                 "Intended Audience :: Developers",
@@ -35,5 +38,4 @@ setup (name = 'windows-capture-device-list',
                 "Programming Language :: Python :: Implementation :: CPython",
                 "Topic :: Scientific/Engineering",
                 "Topic :: Software Development",
-            ],
-          )
+            ],)
