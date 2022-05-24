@@ -29,7 +29,7 @@
 ```bash
 python test.py
 ```
-![camera list in Python](screenshot/python-list-device.PNG)
+![camera list in Python](https://raw.githubusercontent.com/yushulx/python-capture-device-list/master/screenshot/python-list-device.PNG)
 
 ## Blog
 [Listing Multiple Cameras for OpenCV-Python on Windows][1]
