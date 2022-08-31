@@ -1,10 +1,9 @@
-# List Capture Devices for Python OpenCV on Windows
-**OpenCV** does not have an API for listing capture devices. The sample shows how to create a Python extension to invoke DirectShow C++ APIs for enumerating capture devices.
+# Getting Camera List and Resolution in Python on Windows
+**OpenCV** does not have an API for enumerating capture devices. The sample shows how to create a Python extension to invoke DirectShow C++ APIs for enumerating capture devices and corresponding resolutions.
 
-## Environment
+## Environment   
 * [Microsoft Windows SDK][0]
-* Python 2.7.9 / Python 3.6.5
-* OpenCV 3.3.0
+* Python 3.6 or later
 
 ## How to Build the CPython Extension
 - Create a source distribution:
@@ -59,8 +58,8 @@ def main():
     device_list = device.getDeviceList()
     index = 0
 
-    for name in device_list:
-        print(str(index) + ': ' + name)
+    for camera in device_list:
+        print(str(index) + ': ' + camera[0] + ' ' + str(camera[1]))
         index += 1
 
     last_index = index - 1
@@ -102,6 +101,7 @@ if __name__ == "__main__":
 ```bash
 python test.py
 ```
+
 ![camera list in Python](https://raw.githubusercontent.com/yushulx/python-capture-device-list/master/screenshot/python-list-device.PNG)
 
 ## Blog

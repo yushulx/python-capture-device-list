@@ -1,2 +1,4 @@
 /build
 /.vscode
+/_skbuild
+/windows_capture_device_list.egg-info

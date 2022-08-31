@@ -1,4 +1,4 @@
-
+// https://docs.microsoft.com/en-us/windows/win32/directshow/selecting-a-capture-device
 // Python includes
 #include <Python.h>
 
@@ -8,6 +8,7 @@
 #include <windows.h>
 #include <dshow.h>
 #include <comutil.h>
+#include <string>
 
 #pragma comment(lib, "strmiids")
 
@@ -41,6 +42,32 @@ static struct module_state _state;
 // #pragma comment(lib, "odbc32")
 // #pragma comment(lib, "odbccp32")
 #pragma comment(lib, "comsuppwd.lib")
+
+// https://docs.microsoft.com/en-us/windows/win32/directshow/deletemediatype
+void _FreeMediaType(AM_MEDIA_TYPE& mt)
+{
+    if (mt.cbFormat != 0)
+    {
+        CoTaskMemFree((PVOID)mt.pbFormat);
+        mt.cbFormat = 0;
+        mt.pbFormat = NULL;
+    }
+    if (mt.pUnk != NULL)
+    {
+        // pUnk should not be used.
+        mt.pUnk->Release();
+        mt.pUnk = NULL;
+    }
+}
+
+void _DeleteMediaType(AM_MEDIA_TYPE *pmt)
+{
+    if (pmt != NULL)
+    {
+        _FreeMediaType(*pmt); 
+        CoTaskMemFree(pmt);
+    }
+}
 
 HRESULT EnumerateDevices(REFGUID category, IEnumMoniker **ppEnum)
 {
@@ -79,6 +106,59 @@ PyObject* DisplayDeviceInformation(IEnumMoniker *pEnum)
 			continue;
 		}
 
+		// Get supported resolution
+		// https://docs.microsoft.com/en-us/windows/win32/directshow/enumerating-media-types
+		// https://stackoverflow.com/questions/4359775/windows-how-to-get-cameras-supported-resolutions/4360002#4360002
+		IEnumPins *pEnum = NULL;
+		IBaseFilter * pFilter = NULL;
+		hr = pMoniker->BindToObject(0, 0, IID_IBaseFilter, (void**)&pFilter);
+		if (FAILED(hr))
+		{
+			pMoniker->Release();
+			continue;
+		}
+
+		hr = pFilter->EnumPins(&pEnum);
+		if (FAILED(hr))
+		{
+			pFilter->Release();
+			continue;
+		}
+
+		IPin *pPin = NULL;
+		PyObject* resolutionList = PyList_New(0); 
+		while(S_OK == pEnum->Next(1, &pPin, NULL))
+		{
+			IEnumMediaTypes *pEnumMediaTypes = NULL;
+			AM_MEDIA_TYPE *mediaType = NULL;
+			VIDEOINFOHEADER* videoInfoHeader = NULL;
+			HRESULT hr = pPin->EnumMediaTypes(&pEnumMediaTypes);
+			if (FAILED(hr))
+			{
+				continue;
+			}
+
+			while (hr = pEnumMediaTypes->Next(1, &mediaType, NULL), hr == S_OK)
+			{
+				if ((mediaType->formattype == FORMAT_VideoInfo) &&
+					(mediaType->cbFormat >= sizeof(VIDEOINFOHEADER)) &&
+					(mediaType->pbFormat != NULL))
+				{
+					videoInfoHeader = (VIDEOINFOHEADER*)mediaType->pbFormat;
+					videoInfoHeader->bmiHeader.biWidth;  
+					videoInfoHeader->bmiHeader.biHeight; 
+					PyObject *size = PyTuple_New(2);
+					PyTuple_SET_ITEM(size, 0, Py_BuildValue("i", videoInfoHeader->bmiHeader.biWidth));
+					PyTuple_SET_ITEM(size, 1, Py_BuildValue("i", videoInfoHeader->bmiHeader.biHeight));
+					// printf("%d x %d\n", videoInfoHeader->bmiHeader.biWidth, videoInfoHeader->bmiHeader.biHeight);
+					// std::string s = std::to_string(videoInfoHeader->bmiHeader.biWidth) + "x" + std::to_string(videoInfoHeader->bmiHeader.biHeight);
+					PyList_Append(resolutionList, size);
+				}
+				_DeleteMediaType(mediaType);
+			}
+			pEnumMediaTypes->Release();
+		}
+
 		VARIANT var;
 		VariantInit(&var);
 
@@ -92,7 +172,10 @@ PyObject* DisplayDeviceInformation(IEnumMoniker *pEnum)
 		{
 			// Append a result to Python list
 			char  *pValue = _com_util::ConvertBSTRToString(var.bstrVal);
-			hr = PyList_Append(pyList, Py_BuildValue("s", pValue));
+			PyObject *tuple = PyTuple_New(2);
+			PyTuple_SET_ITEM(tuple, 0, Py_BuildValue("s", pValue));
+			PyTuple_SET_ITEM(tuple, 1, resolutionList);
+			hr = PyList_Append(pyList, tuple);
 			delete[] pValue;  
 			if (FAILED(hr)) {
 				printf("Failed to append the object item at the end of list list\n");

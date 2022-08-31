@@ -8,7 +8,7 @@ module_device = Extension('device',
                       )
 
 setup (name = 'windows-capture-device-list',
-            version = '1.0.1',
+            version = '1.1.0',
             description = 'Get device list with Windows DirectShow',
             long_description=long_description,
             long_description_content_type="text/markdown",

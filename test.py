@@ -28,10 +28,11 @@ def main():
 
     # Get camera list
     device_list = device.getDeviceList()
+    # print(device_list)
     index = 0
 
-    for name in device_list:
-        print(str(index) + ': ' + name)
+    for camera in device_list:
+        print(str(index) + ': ' + camera[0] + ' ' + str(camera[1]))
         index += 1
 
     last_index = index - 1
@@ -54,7 +55,7 @@ def main():
         while True:
             
             ret, frame = cap.read()
-            cv2.imshow("frame", frame)
+            cv2.imshow("Camera List and Resolution", frame)
 
             # key: 'ESC'
             key = cv2.waitKey(20)
