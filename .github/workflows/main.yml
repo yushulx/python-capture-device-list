@@ -1,6 +1,5 @@
 name: Build and upload to PyPI
 
-# Build on every branch push, tag push, and pull request change:
 on: [push, pull_request]
 
 jobs:
@@ -9,20 +8,37 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-2019]
+        os: [windows-latest]
+        python-version: ['3.10']
 
     steps:
       - uses: actions/checkout@v2
-
-      - name: Build wheels
-        uses: pypa/cibuildwheel@v2.5.0
-        env:
-          CIBW_ARCHS_WINDOWS: AMD64
-          CIBW_SKIP: "pp* *-win32 *-manylinux_i686"
-
-      - uses: actions/upload-artifact@v2
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          path: ./wheelhouse/*.whl
+          python-version: ${{ matrix.python-version }}
+
+      - name: Run test in develop mode
+        run: |
+          python -m pip install opencv-python 
+          python setup.py develop
+          python test.py
+
+      - name: Build wheels for Linux
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          docker run --rm -v $(pwd):/io quay.io/pypa/manylinux_2_24_x86_64 \
+            /bin/bash -c "python3 -m pip install -U setuptools wheel && cd /io && python3 setup.py bdist_wheel -d dist && auditwheel repair dist/*.whl -w /io/wheelhouse"
+
+      - name: Build wheels for Windows
+        if: matrix.os == 'windows-latest'
+        run: |
+          pip install -U wheel setuptools
+          python setup.py bdist_wheel -d wheelhouse
+
+      - uses: actions/upload-artifact@v3
+        with:
+          path: wheelhouse/*.whl
 
   build_sdist:
     name: Build source distribution
@@ -31,21 +47,18 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Build sdist
-        run: pipx run build --sdist
+        run: python setup.py sdist -d dist
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           path: dist/*.tar.gz
-          
+
   upload_pypi:
     needs: [build_wheels, build_sdist]
     runs-on: ubuntu-latest
-    # upload to PyPI on every tag starting with 'v'
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-    # alternatively, to publish when a GitHub Release is created, use the following rule:
-    # if: github.event_name == 'release' && github.event.action == 'published'
     steps:
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: artifact
           path: dist

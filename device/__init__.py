@@ -1,1 +1,1 @@
-from .device import getDeviceList 
+from .device import *

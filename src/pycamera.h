@@ -1,0 +1,140 @@
+#ifndef __PyCamera_H__
+#define __PyCamera_H__
+
+#include <Python.h>
+#include <structmember.h>
+
+#include "Camera.h"
+
+typedef struct
+{
+    PyObject_HEAD Camera *handler;
+
+} PyCamera;
+
+static int PyCamera_clear(PyCamera *self)
+{
+    if (self->handler)
+    {
+        delete self->handler;
+    }
+    return 0;
+}
+
+static void PyCamera_dealloc(PyCamera *self)
+{
+    PyCamera_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *)self);
+}
+
+static PyObject *PyCamera_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{
+    PyCamera *self;
+
+    self = (PyCamera *)type->tp_alloc(type, 0);
+    if (self != NULL)
+    {
+        self->handler = new Camera();
+    }
+
+    return (PyObject *)self;
+}
+
+static PyObject *open(PyObject *obj, PyObject *args)
+{
+    PyCamera *self = (PyCamera *)obj;
+
+    int index = 0;
+    if (!PyArg_ParseTuple(args, "i", &index))
+    {
+        return NULL;
+    }
+
+    bool ret = self->handler->Open(index);
+    return Py_BuildValue("i", ret);
+}
+
+static PyObject *listMediaTypes(PyObject *obj, PyObject *args)
+{
+    PyCamera *self = (PyCamera *)obj;
+
+    std::vector<MediaTypeInfo> mediaTypes = self->handler->ListSupportedMediaTypes();
+
+    PyObject *pyList = PyList_New(0);
+
+    for (size_t i = 0; i < mediaTypes.size(); i++)
+    {
+        MediaTypeInfo &mediaType = mediaTypes[i];
+
+#ifdef _WIN32
+        // For Windows: Convert wide-character string to UTF-8
+        PyObject *subtypeName = PyUnicode_FromWideChar(mediaType.subtypeName, wcslen(mediaType.subtypeName));
+        PyObject *pyMediaType = Py_BuildValue("{s:i,s:i,s:O}",
+                                              "width", mediaType.width,
+                                              "height", mediaType.height,
+                                              "subtypeName", subtypeName);
+        if (subtypeName != NULL)
+        {
+            Py_DECREF(subtypeName);
+        }
+
+#else
+        // For Windows: Convert wide-character string to UTF-8
+        PyObject *pyMediaType = Py_BuildValue("{s:i,s:i,s:s}",
+                                              "width", mediaType.width,
+                                              "height", mediaType.height,
+                                              "subtypeName", mediaType.subtypeName);
+#endif
+
+        PyList_Append(pyList, pyMediaType);
+    }
+
+    return pyList;
+}
+
+static PyMethodDef instance_methods[] = {
+    {"open", open, METH_VARARGS, NULL},
+    {"listMediaTypes", listMediaTypes, METH_VARARGS, NULL},
+    {NULL, NULL, 0, NULL}};
+
+static PyTypeObject PyCameraType = {
+    PyVarObject_HEAD_INIT(NULL, 0) "device.PyCamera", /* tp_name */
+    sizeof(PyCamera),                                 /* tp_basicsize */
+    0,                                                /* tp_itemsize */
+    (destructor)PyCamera_dealloc,                     /* tp_dealloc */
+    0,                                                /* tp_print */
+    0,                                                /* tp_getattr */
+    0,                                                /* tp_setattr */
+    0,                                                /* tp_reserved */
+    0,                                                /* tp_repr */
+    0,                                                /* tp_as_number */
+    0,                                                /* tp_as_sequence */
+    0,                                                /* tp_as_mapping */
+    0,                                                /* tp_hash  */
+    0,                                                /* tp_call */
+    0,                                                /* tp_str */
+    PyObject_GenericGetAttr,                          /* tp_getattro */
+    PyObject_GenericSetAttr,                          /* tp_setattro */
+    0,                                                /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,         /*tp_flags*/
+    "PyCamera",                                       /* tp_doc */
+    0,                                                /* tp_traverse */
+    0,                                                /* tp_clear */
+    0,                                                /* tp_richcompare */
+    0,                                                /* tp_weaklistoffset */
+    0,                                                /* tp_iter */
+    0,                                                /* tp_iternext */
+    instance_methods,                                 /* tp_methods */
+    0,                                                /* tp_members */
+    0,                                                /* tp_getset */
+    0,                                                /* tp_base */
+    0,                                                /* tp_dict */
+    0,                                                /* tp_descr_get */
+    0,                                                /* tp_descr_set */
+    0,                                                /* tp_dictoffset */
+    0,                                                /* tp_init */
+    0,                                                /* tp_alloc */
+    PyCamera_new,                                     /* tp_new */
+};
+
+#endif
