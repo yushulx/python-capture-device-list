@@ -10,7 +10,7 @@ from pathlib import Path
 lib_dir = ''
 
 sources = [
-    "src/device.cpp",
+    "src/litecam.cpp",
 ]
 
 include_dirs = [os.path.join(os.path.dirname(__file__), "include")]
@@ -42,8 +42,8 @@ else:
 
 long_description = io.open("README.md", encoding="utf-8").read()
 
-module_device = Extension(
-    "device",
+module_litecam = Extension(
+    "litecam",
     sources=sources,
     include_dirs=include_dirs,
     library_dirs=[lib_dir],
@@ -67,7 +67,7 @@ def copyfiles(src, dst):
 class CustomBuildExt(build_ext.build_ext):
     def run(self):
         build_ext.build_ext.run(self)
-        dst = os.path.join(self.build_lib, "device")
+        dst = os.path.join(self.build_lib, "litecam")
         copyfiles(lib_dir, dst)
         filelist = os.listdir(self.build_lib)
         for file in filelist:
@@ -81,7 +81,7 @@ class CustomBuildExt(build_ext.build_ext):
 class CustomBuildExtDev(build_ext.build_ext):
     def run(self):
         build_ext.build_ext.run(self)
-        dev_folder = os.path.join(Path(__file__).parent, 'device')
+        dev_folder = os.path.join(Path(__file__).parent, 'litecam')
         copyfiles(lib_dir, dev_folder)
         filelist = os.listdir(self.build_lib)
         for file in filelist:
@@ -96,15 +96,15 @@ class CustomInstall(install):
 
 
 setup(name='lite-camera',
-      version='2.0.0',
+      version='2.0.1',
       description='LiteCam is a lightweight, cross-platform library for capturing RGB frames from cameras and displaying them. Designed with simplicity and ease of integration in mind, LiteCam supports Windows, Linux and macOS platforms.',
       long_description=long_description,
       long_description_content_type="text/markdown",
       author='yushulx',
-      url='https://github.com/yushulx/python-capture-device-list',
+      url='https://github.com/yushulx/python-lite-camera',
       license='MIT',
-      # packages=['device'],
-      ext_modules=[module_device],
+      packages=['litecam'],
+      ext_modules=[module_litecam],
       classifiers=[
            "Development Status :: 5 - Production/Stable",
            "Environment :: Console",

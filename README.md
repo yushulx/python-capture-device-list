@@ -39,13 +39,13 @@
 ### Basic Example
 
 ```python
-import device
+import litecam
 
-camera = device.PyCamera()
+camera = litecam.PyCamera()
 
 if camera.open(0):
 
-    window = device.PyWindow(
+    window = litecam.PyWindow(
         camera.getWidth(), camera.getHeight(), "Camera Stream")
 
     while window.waitKey('q'):

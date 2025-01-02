@@ -1,9 +1,9 @@
-import device
+import litecam
 import time
-camera_names = device.getDeviceList()
+camera_names = litecam.getDeviceList()
 print(camera_names)
 
-camera = device.PyCamera()
+camera = litecam.PyCamera()
 
 if camera.open(0):
     print("Camera is opened")
@@ -19,11 +19,11 @@ if camera.open(0):
             size = frame[2]
             data = frame[3]
             filename = str(i) + ".jpg"
-            device.saveJpeg(filename, width, height, data)
+            litecam.saveJpeg(filename, width, height, data)
 
         time.sleep(1)
 
-    window = device.PyWindow(
+    window = litecam.PyWindow(
         camera.getWidth(), camera.getHeight(), "Camera Stream")
 
     while window.waitKey('q'):

@@ -64,21 +64,21 @@ static PyObject *saveJpeg(PyObject *obj, PyObject *args)
 	Py_RETURN_NONE;
 }
 
-static PyMethodDef device_methods[] = {
+static PyMethodDef litecam_methods[] = {
 	{"getDeviceList", getDeviceList, METH_VARARGS, "Get available cameras"},
 	{"saveJpeg", saveJpeg, METH_VARARGS, "Get available cameras"},
 	{NULL, NULL, 0, NULL}};
 
-static struct PyModuleDef device_module_def = {
+static struct PyModuleDef litecam_module_def = {
 	PyModuleDef_HEAD_INIT,
-	"device",
-	"Internal \"device\" module",
+	"litecam",
+	"Internal \"litecam\" module",
 	-1,
-	device_methods};
+	litecam_methods};
 
-PyMODINIT_FUNC PyInit_device(void)
+PyMODINIT_FUNC PyInit_litecam(void)
 {
-	PyObject *module = PyModule_Create(&device_module_def);
+	PyObject *module = PyModule_Create(&litecam_module_def);
 	if (module == NULL)
 		INITERROR;
 
