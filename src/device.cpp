@@ -71,4 +71,3 @@ PyMODINIT_FUNC PyInit_device(void)
 
 	return module;
 }
-////

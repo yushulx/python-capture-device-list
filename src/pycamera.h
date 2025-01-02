@@ -92,9 +92,81 @@ static PyObject *listMediaTypes(PyObject *obj, PyObject *args)
     return pyList;
 }
 
+static PyObject *release(PyObject *obj, PyObject *args)
+{
+    PyCamera *self = (PyCamera *)obj;
+
+    self->handler->Release();
+    Py_RETURN_NONE;
+}
+
+static PyObject *setResolution(PyObject *obj, PyObject *args)
+{
+    PyCamera *self = (PyCamera *)obj;
+    int width = 0;
+    int height = 0;
+    if (!PyArg_ParseTuple(args, "ii", &width, &height))
+    {
+        return NULL;
+    }
+    int ret = self->handler->SetResolution(width, height);
+    return Py_BuildValue("i", ret);
+}
+
+static PyObject *captureFrame(PyObject *obj, PyObject *args)
+{
+    PyCamera *self = (PyCamera *)obj;
+
+    FrameData frame = self->handler->CaptureFrame();
+    if (frame.rgbData)
+    {
+        PyObject *rgbData = PyByteArray_FromStringAndSize((const char *)frame.rgbData, frame.size);
+        PyObject *pyFrame = Py_BuildValue("iiiO", frame.width, frame.height, frame.size, rgbData);
+        ReleaseFrame(frame);
+
+        return pyFrame;
+    }
+    else
+    {
+        Py_RETURN_NONE;
+    }
+}
+
+static PyObject *saveJpeg(PyObject *obj, PyObject *args)
+{
+    PyCamera *self = (PyCamera *)obj;
+
+    const char *filename = NULL;
+    int width = 0, height = 0;
+    PyObject *byteArray = NULL;
+
+    if (!PyArg_ParseTuple(args, "siiO", &filename, &width, &height, &byteArray))
+    {
+        PyErr_SetString(PyExc_TypeError, "Expected arguments: str, int, int, PyByteArray");
+        return NULL;
+    }
+
+    unsigned char *data = (unsigned char *)PyByteArray_AsString(byteArray);
+    Py_ssize_t size = PyByteArray_Size(byteArray);
+
+    if (size != (Py_ssize_t)(width * height * 3))
+    {
+        PyErr_SetString(PyExc_ValueError, "Invalid byte array size for the given width and height.");
+        return NULL;
+    }
+
+    saveFrameAsJPEG(data, width, height, filename);
+
+    Py_RETURN_NONE;
+}
+
 static PyMethodDef instance_methods[] = {
     {"open", open, METH_VARARGS, NULL},
     {"listMediaTypes", listMediaTypes, METH_VARARGS, NULL},
+    {"release", release, METH_VARARGS, NULL},
+    {"setResolution", setResolution, METH_VARARGS, NULL},
+    {"captureFrame", captureFrame, METH_VARARGS, NULL},
+    {"saveJpeg", saveJpeg, METH_VARARGS, NULL},
     {NULL, NULL, 0, NULL}};
 
 static PyTypeObject PyCameraType = {
