@@ -3,50 +3,42 @@ name: Build and upload to PyPI
 on: [push, pull_request]
 
 jobs:
-  build_wheels:
-    name: Build wheels on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+  build_windows_wheel:
+    name: Build wheel on Windows
+    runs-on: windows-latest
     strategy:
       matrix:
-        os: [windows-latest]
-        python-version: ['3.10']
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13'] 
 
     steps:
       - uses: actions/checkout@v2
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Run test in develop mode
-        run: |
-          python -m pip install setuptools wheel
-          python setup.py develop
-          python test.py
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip setuptools wheel
 
-      - name: Build wheels for Linux
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          docker run --rm -v $(pwd):/io quay.io/pypa/manylinux_2_24_x86_64 \
-            /bin/bash -c "python3 -m pip install -U setuptools wheel && cd /io && python3 setup.py bdist_wheel -d dist && auditwheel repair dist/*.whl -w /io/wheelhouse"
+      - name: Build Windows wheel
+        run: python setup.py bdist_wheel -d wheelhouse
 
-      - name: Build wheels for Windows
-        if: matrix.os == 'windows-latest'
-        run: |
-          pip install -U wheel setuptools
-          python setup.py bdist_wheel -d wheelhouse
-
-      - uses: actions/upload-artifact@v3
+      - name: Upload Windows wheels
+        uses: actions/upload-artifact@v3
         with:
           path: wheelhouse/*.whl
 
   build_sdist:
     name: Build source distribution
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  
     steps:
       - uses: actions/checkout@v2
 
-      - name: Build sdist
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip setuptools
+
+      - name: Build source distribution
         run: python setup.py sdist -d dist
 
       - uses: actions/upload-artifact@v3
@@ -54,7 +46,7 @@ jobs:
           path: dist/*.tar.gz
 
   upload_pypi:
-    needs: [build_wheels, build_sdist]
+    needs: [build_windows_wheel, build_sdist]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     steps:
