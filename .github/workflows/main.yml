@@ -20,7 +20,7 @@ jobs:
 
       - name: Run test in develop mode
         run: |
-          python -m pip install opencv-python 
+          python -m pip install setuptools wheel
           python setup.py develop
           python test.py
 

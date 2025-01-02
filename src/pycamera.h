@@ -103,8 +103,7 @@ static PyObject *release(PyObject *obj, PyObject *args)
 static PyObject *setResolution(PyObject *obj, PyObject *args)
 {
     PyCamera *self = (PyCamera *)obj;
-    int width = 0;
-    int height = 0;
+    int width = 0, height = 0;
     if (!PyArg_ParseTuple(args, "ii", &width, &height))
     {
         return NULL;
@@ -132,32 +131,20 @@ static PyObject *captureFrame(PyObject *obj, PyObject *args)
     }
 }
 
-static PyObject *saveJpeg(PyObject *obj, PyObject *args)
+static PyObject *getWidth(PyObject *obj, PyObject *args)
 {
     PyCamera *self = (PyCamera *)obj;
 
-    const char *filename = NULL;
-    int width = 0, height = 0;
-    PyObject *byteArray = NULL;
+    int width = self->handler->frameWidth;
+    return Py_BuildValue("i", width);
+}
 
-    if (!PyArg_ParseTuple(args, "siiO", &filename, &width, &height, &byteArray))
-    {
-        PyErr_SetString(PyExc_TypeError, "Expected arguments: str, int, int, PyByteArray");
-        return NULL;
-    }
+static PyObject *getHeight(PyObject *obj, PyObject *args)
+{
+    PyCamera *self = (PyCamera *)obj;
 
-    unsigned char *data = (unsigned char *)PyByteArray_AsString(byteArray);
-    Py_ssize_t size = PyByteArray_Size(byteArray);
-
-    if (size != (Py_ssize_t)(width * height * 3))
-    {
-        PyErr_SetString(PyExc_ValueError, "Invalid byte array size for the given width and height.");
-        return NULL;
-    }
-
-    saveFrameAsJPEG(data, width, height, filename);
-
-    Py_RETURN_NONE;
+    int height = self->handler->frameHeight;
+    return Py_BuildValue("i", height);
 }
 
 static PyMethodDef instance_methods[] = {
@@ -166,7 +153,8 @@ static PyMethodDef instance_methods[] = {
     {"release", release, METH_VARARGS, NULL},
     {"setResolution", setResolution, METH_VARARGS, NULL},
     {"captureFrame", captureFrame, METH_VARARGS, NULL},
-    {"saveJpeg", saveJpeg, METH_VARARGS, NULL},
+    {"getWidth", getWidth, METH_VARARGS, NULL},
+    {"getHeight", getHeight, METH_VARARGS, NULL},
     {NULL, NULL, 0, NULL}};
 
 static PyTypeObject PyCameraType = {
