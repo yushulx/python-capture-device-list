@@ -29,8 +29,8 @@ elif sys.platform == "darwin":
     lib_dir = 'lib/macos'
     # extra_compile_args = ["-x objective-c++"]
     # libraries = ["Cocoa", "AVFoundation", "CoreMedia", "CoreVideo", "objc"]
-    extra_compile_args = ['-std=c++11'],
-    extra_link_args = ["-Wl,-rpath,@loader_path"],
+    extra_compile_args = ['-std=c++11']
+    extra_link_args = ["-Wl,-rpath,@loader_path"]
 elif sys.platform == "win32":
     # Windows
     lib_dir = 'lib/windows'
