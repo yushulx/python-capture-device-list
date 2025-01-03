@@ -1,0 +1,2 @@
+dynamsoft-capture-vision-bundle
+lite-camera
