@@ -17,15 +17,16 @@
 - **macOS**
 
 ## How to Build the CPython Extension    
-- Development
+- Development Mode
     
     ```bash
     python setup.py develop
     ```
-- Release
+
+- Wheel Package
 
     ```bash
-    python setup.py build
+    python setup.py bdist_wheel
     ```
 
 - Source Distribution
